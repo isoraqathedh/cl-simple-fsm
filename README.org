@@ -114,6 +114,12 @@ so that code like [[state-transition-method]] don't have to be written.
 
 ** TODO Encompassing macros
 All of these should have some way to wrap them all around as one coherent whole.
+Candidates are:
+
+- ~define-state-machine~, which defines a state machine
+  and its transitions at once; and
+- ~with-state-machine~, which creates a state machine
+  lasting for the body of the macro.
 
 ** TODO Reconsider history
 Finite state machines don't have history. It may be better to remove them.
