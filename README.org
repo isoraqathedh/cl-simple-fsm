@@ -1,0 +1,124 @@
+#+Title: finite-state-machine
+
+An intuitive implementation of a finite state machine.
+
+* Operation
+** Creating a state machine
+First, create your state machine, and store it somewhere.
+
+#+BEGIN_SRC lisp
+  (defvar *state*
+    (make-instance 'finite-state-machine
+                   :states (list :start
+                                 :sign
+                                 :pre-decimal-point-digit
+                                 :decimal-point
+                                 :post-decimal-point-digit
+                                 :reject)
+                   :accepting-states (list :pre-decimal-point-digit
+                                           :post-decimal-point-digit)))
+#+END_SRC
+
+Alternatively, you can subclass ~finite-state-machine~
+if you wish to make many of the same machine and give them an identity:
+
+#+BEGIN_SRC lisp
+  (defclass decimal-recogniser (finite-state-machine)
+    ()
+    (:default-initargs
+     :states (list :start
+                   :sign
+                   :pre-decimal-point-digit
+                   :decimal-point
+                   :post-decimal-point-digit
+                   :reject)
+     :accepting-states (list :pre-decimal-point-digit
+                             :post-decimal-point-digit)))
+
+  (defvar *state* (make-instance 'decimal-recogniser))
+#+END_SRC
+
+You must provide ~make-instance~ a list of states, or it will complain.
+If you don't provide a starting state via ~:start-state~,
+then the first one is automatically selected as the start state.
+If you don't provide any ~:accepting-states~,
+this is acceptable but a little bit silly.
+
+The states can be anything you feel is appropriate,
+but if the default comparison function ~#'eql~ is inadequate,
+you may want to set ~:test~ to compare them with each other.
+
+** Transitions
+The next step is to define some transitions.
+This is done by adding methods to ~next-state~,
+which takes in the state machine (with its current state) and an event.
+
+What that event is can again be anything you desire,
+as long as you can specify it as a specialiser on the method.
+If you do use a one-off state machine as above,
+then you should use an ~eql~ specialiser for your methods.
+
+#+Name: state-transition-method
+#+BEGIN_SRC lisp
+  (defmethod next-state ((machine decimal-recogniser) (event character))
+    (ecase (state machine)
+      (:start
+       (case event
+         ((#\+ #\-) :sign)
+         ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) :pre-decimal-point-digit)
+         (#\. :decimal-point)
+         (t :reject)))
+      (:sign
+       (case event
+         ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) :pre-decimal-point-digit)
+         (#\. :decimal-point)
+         (t :reject)))
+      (:pre-decimal-point-digit
+       (case event
+         ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) :pre-decimal-point-digit)
+         (#\. :decimal-point)
+         (t :reject)))
+      ((:decimal-point :post-decimal-point-digit)
+       (case event
+         ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9) :post-decimal-point-digit)
+         (t :reject)))
+      (:reject :reject)))
+#+END_SRC
+
+After that, you can run the machine on a particular sequence (here, a string).
+To check if the machine is in an accepting state, use ~acceptingp~:
+
+#+BEGIN_SRC lisp
+  (defun decimal-number-p (to-check)
+    (loop with recogniser = (make-instance 'decimal-recogniser)
+          for c across to-check
+          do (next-state! recogniser c)
+          finally (return (acceptingp recogniser))))
+
+  (decimal-number-p "123.45")
+  (decimal-number-p "-123")
+  (decimal-number-p "bogus")
+#+END_SRC
+
+For best results, consider a ~token~ class that lists out all objects
+that /can/ change the state of the machine.
+
+* Things to do [0/4]
+** TODO Transition table
+There will be a way to more succinctly represent the transition table
+so that code like [[state-transition-method]] don't have to be written.
+
+** TODO Encompassing macros
+All of these should have some way to wrap them all around as one coherent whole.
+
+** TODO Reconsider history
+Finite state machines don't have history. It may be better to remove them.
+
+** TODO Built-in tokens
+Consider creating ~tokenised-finite-state-machine~,
+which contains within it the list of tokens that it recognises.
+
+* License
+
+MIT
+
