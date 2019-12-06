@@ -101,6 +101,9 @@ To check if the machine is in an accepting state, use ~acceptingp~:
   (decimal-number-p "bogus")
 #+END_SRC
 
+Note we have used ~next-state!~ here,
+which automatically sets the next state on the original object.
+
 For best results, consider a ~token~ class that lists out all objects
 that /can/ change the state of the machine as the event.
 
