@@ -47,6 +47,7 @@ this is acceptable but a little bit silly.
 The states can be anything you feel is appropriate,
 but if the default comparison function ~#'eql~ is inadequate,
 you may want to set ~:test~ to compare them with each other.
+For simplicity, choose keywords.
 
 ** Transitions
 The next step is to define some transitions.
@@ -101,7 +102,7 @@ To check if the machine is in an accepting state, use ~acceptingp~:
 #+END_SRC
 
 For best results, consider a ~token~ class that lists out all objects
-that /can/ change the state of the machine.
+that /can/ change the state of the machine as the event.
 
 * Things to do [0/4]
 ** TODO Transition table
