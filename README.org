@@ -8,7 +8,7 @@ First, create your state machine, and store it somewhere.
 
 #+BEGIN_SRC lisp
   (defvar *state*
-    (make-instance 'finite-state-machine
+    (make-instance 'info.isoraqathedh.finite-state-machine:finite-state-machine
                    :states (list :start
                                  :sign
                                  :pre-decimal-point-digit
@@ -18,6 +18,9 @@ First, create your state machine, and store it somewhere.
                    :accepting-states (list :pre-decimal-point-digit
                                            :post-decimal-point-digit)))
 #+END_SRC
+
+(All unqualified symbols are in ~common-lisp~ or the package that this system uses,
+~info.isoraqathedh.finite-state-machine~.)
 
 Alternatively, you can subclass ~finite-state-machine~
 if you wish to make many of the same machine and give them an identity:
